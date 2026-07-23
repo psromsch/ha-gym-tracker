@@ -16,6 +16,8 @@ from homeassistant.util import dt as dt_util
 
 from .const import (
     DOMAIN,
+    EVENT_SET_ADDED,
+    EVENT_SET_REMOVED,
     EXERCISES,
     MUSCLE_GROUPS,
     NUMBER_REPS,
@@ -160,6 +162,11 @@ class GymTrackerCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                 self.data["muscles"][muscle]["sets"] += 1
 
         await self._async_persist()
+        # Let external automations (e.g. the weekly wt_sets_* counters) react.
+        self.hass.bus.async_fire(
+            EVENT_SET_ADDED,
+            {"base": base, "muscles": list(self.exercises[base].muscles)},
+        )
 
     async def async_undo_last_set(self, base: str) -> None:
         """Remove the most recent set (§6 undo_last_set)."""
@@ -189,6 +196,11 @@ class GymTrackerCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                 )
 
         await self._async_persist()
+        # Mirror of EVENT_SET_ADDED — undo decrements the external counters too.
+        self.hass.bus.async_fire(
+            EVENT_SET_REMOVED,
+            {"base": base, "muscles": list(self.exercises[base].muscles)},
+        )
 
     async def async_finish_exercise(self, base: str) -> None:
         """Close out the current session into history (§6 finish_exercise)."""

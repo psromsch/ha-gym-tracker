@@ -31,6 +31,11 @@ ATTR_FOCUS = "focus"
 ATTR_MUSCLES = "muscles"
 ATTR_CHART_MIN = "chart_min"
 
+# Events fired on the HA bus so external automations can bridge to their own
+# per-muscle-group counters. Payload: {"base": str, "muscles": [str, ...]}.
+EVENT_SET_ADDED = f"{DOMAIN}_set_added"
+EVENT_SET_REMOVED = f"{DOMAIN}_set_removed"
+
 # Default y-axis floor for a newly added exercise's ApexCharts card.
 CHART_MIN_DEFAULT = 20
 
