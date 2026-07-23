@@ -39,3 +39,65 @@ finish_exercise:
       example: bench_press
       selector:
         text:
+
+delete_set:
+  name: Delete set
+  description: >-
+    Remove one set from any session. Subtracts its volume from that session's
+    total and from the lifetime total (both clamped at 0) and recomputes the
+    session's max weight. Does not adjust weekly muscle counters.
+  fields:
+    base:
+      name: Exercise
+      description: The exercise base slug (e.g. bench_press).
+      required: true
+      example: bench_press
+      selector:
+        text:
+    session_index:
+      name: Session index
+      description: "-1 = current (Today) session; 0 = most recent finished (T-1); 1 = T-2; …"
+      required: true
+      example: 0
+      selector:
+        number:
+          min: -1
+          max: 100
+          step: 1
+          mode: box
+    set_index:
+      name: Set index
+      description: "0-based index of the set within the session (0 = first set)."
+      required: true
+      example: 0
+      selector:
+        number:
+          min: 0
+          max: 100
+          step: 1
+          mode: box
+
+delete_session:
+  name: Delete session
+  description: >-
+    Remove a whole session and subtract its total from the lifetime total
+    (clamped at 0). Does not adjust weekly muscle counters.
+  fields:
+    base:
+      name: Exercise
+      description: The exercise base slug (e.g. bench_press).
+      required: true
+      example: bench_press
+      selector:
+        text:
+    session_index:
+      name: Session index
+      description: "-1 = current (Today) session; 0 = most recent finished (T-1); 1 = T-2; …"
+      required: true
+      example: 0
+      selector:
+        number:
+          min: -1
+          max: 100
+          step: 1
+          mode: box

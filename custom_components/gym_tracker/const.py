@@ -18,8 +18,12 @@ STORAGE_KEY = DOMAIN
 SERVICE_ADD_SET = "add_set"
 SERVICE_UNDO_LAST_SET = "undo_last_set"
 SERVICE_FINISH_EXERCISE = "finish_exercise"
+SERVICE_DELETE_SET = "delete_set"
+SERVICE_DELETE_SESSION = "delete_session"
 
 ATTR_BASE = "base"
+ATTR_SESSION_INDEX = "session_index"
+ATTR_SET_INDEX = "set_index"
 
 # --- Number entity input ranges (§5) -----------------------------------------
 NUMBER_WEIGHT = "weight"

@@ -10,10 +10,14 @@ from homeassistant.helpers.storage import Store
 
 from .const import (
     ATTR_BASE,
+    ATTR_SESSION_INDEX,
+    ATTR_SET_INDEX,
     DOMAIN,
     ENABLED_EXERCISES,
     PLATFORMS,
     SERVICE_ADD_SET,
+    SERVICE_DELETE_SESSION,
+    SERVICE_DELETE_SET,
     SERVICE_FINISH_EXERCISE,
     SERVICE_UNDO_LAST_SET,
     STORAGE_KEY,
@@ -25,13 +29,39 @@ type GymTrackerConfigEntry = ConfigEntry[GymTrackerCoordinator]
 
 # base is validated against the enabled set so the one ENABLED_EXERCISES knob
 # widens services and entities together.
-_SERVICE_SCHEMA = vol.Schema({vol.Required(ATTR_BASE): vol.In(ENABLED_EXERCISES)})
+_BASE_SCHEMA = vol.Schema({vol.Required(ATTR_BASE): vol.In(ENABLED_EXERCISES)})
+_DELETE_SET_SCHEMA = vol.Schema(
+    {
+        vol.Required(ATTR_BASE): vol.In(ENABLED_EXERCISES),
+        vol.Required(ATTR_SESSION_INDEX): vol.All(vol.Coerce(int), vol.Range(min=-1)),
+        vol.Required(ATTR_SET_INDEX): vol.All(vol.Coerce(int), vol.Range(min=0)),
+    }
+)
+_DELETE_SESSION_SCHEMA = vol.Schema(
+    {
+        vol.Required(ATTR_BASE): vol.In(ENABLED_EXERCISES),
+        vol.Required(ATTR_SESSION_INDEX): vol.All(vol.Coerce(int), vol.Range(min=-1)),
+    }
+)
 
-_SERVICE_METHODS = {
-    SERVICE_ADD_SET: "async_add_set",
-    SERVICE_UNDO_LAST_SET: "async_undo_last_set",
-    SERVICE_FINISH_EXERCISE: "async_finish_exercise",
-}
+# (service name, coordinator method, schema, ordered param names)
+_SERVICES: tuple[tuple[str, str, vol.Schema, tuple[str, ...]], ...] = (
+    (SERVICE_ADD_SET, "async_add_set", _BASE_SCHEMA, (ATTR_BASE,)),
+    (SERVICE_UNDO_LAST_SET, "async_undo_last_set", _BASE_SCHEMA, (ATTR_BASE,)),
+    (SERVICE_FINISH_EXERCISE, "async_finish_exercise", _BASE_SCHEMA, (ATTR_BASE,)),
+    (
+        SERVICE_DELETE_SET,
+        "async_delete_set",
+        _DELETE_SET_SCHEMA,
+        (ATTR_BASE, ATTR_SESSION_INDEX, ATTR_SET_INDEX),
+    ),
+    (
+        SERVICE_DELETE_SESSION,
+        "async_delete_session",
+        _DELETE_SESSION_SCHEMA,
+        (ATTR_BASE, ATTR_SESSION_INDEX),
+    ),
+)
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: GymTrackerConfigEntry) -> bool:
@@ -58,7 +88,7 @@ async def async_unload_entry(hass: HomeAssistant, entry: GymTrackerConfigEntry) 
             if other.entry_id != entry.entry_id
         ]
         if not remaining:
-            for service in _SERVICE_METHODS:
+            for service, _method, _schema, _params in _SERVICES:
                 hass.services.async_remove(DOMAIN, service)
     return unload_ok
 
@@ -70,18 +100,20 @@ def _async_register_services(hass: HomeAssistant) -> None:
         entries = hass.config_entries.async_entries(DOMAIN)
         return entries[0].runtime_data if entries else None
 
-    def _make_handler(method_name: str):
+    def _make_handler(method_name: str, params: tuple[str, ...]):
         async def _handler(call: ServiceCall) -> None:
             coordinator = _coordinator()
             if coordinator is None:
                 return
-            await getattr(coordinator, method_name)(call.data[ATTR_BASE])
+            await getattr(coordinator, method_name)(
+                *(call.data[p] for p in params)
+            )
 
         return _handler
 
-    for service, method_name in _SERVICE_METHODS.items():
+    for service, method_name, schema, params in _SERVICES:
         if hass.services.has_service(DOMAIN, service):
             continue
         hass.services.async_register(
-            DOMAIN, service, _make_handler(method_name), schema=_SERVICE_SCHEMA
+            DOMAIN, service, _make_handler(method_name, params), schema=schema
         )

@@ -176,3 +176,70 @@ class GymTrackerCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         exercise["current"]["sets"] = []
 
         await self._async_persist()
+
+    def _session_ref(self, exercise: dict[str, Any], session_index: int):
+        """Resolve a session dict from an index.
+
+        ``session_index == -1`` -> the in-progress ``current`` session;
+        ``0`` -> most recent finished session (T-1), ``1`` -> T-2, ... into
+        the newest-first ``history`` list. Returns ``None`` for a bad index.
+        """
+        if session_index == -1:
+            return exercise["current"]
+        if 0 <= session_index < len(exercise["history"]):
+            return exercise["history"][session_index]
+        return None
+
+    async def async_delete_set(
+        self, base: str, session_index: int, set_index: int
+    ) -> None:
+        """Delete one set from any session (§6 delete_set).
+
+        Subtracts the set's volume from the session total (history sessions
+        only — the current session's total is sensor-derived) and from
+        ``lifetime_total``, both clamped at 0, then recomputes ``max_weight``.
+        Muscle counters are deliberately NOT adjusted (see module note / §6):
+        an old set may belong to a previous week, and the weekly counters must
+        not be retroactively rewritten.
+        """
+        exercise = self._exercise(base)
+        session = self._session_ref(exercise, session_index)
+        if session is None:
+            return
+        sets = session["sets"]
+        if not 0 <= set_index < len(sets):
+            return
+
+        removed = sets.pop(set_index)
+        exercise["lifetime_total"] = max(
+            0, exercise["lifetime_total"] - removed["volume"]
+        )
+        # Finished sessions carry a stored total/max_weight; recompute them.
+        # The current session has neither (its sensors derive them live).
+        if session_index != -1:
+            session["total"] = sum(s["volume"] for s in sets)
+            session["max_weight"] = max((s["weight"] for s in sets), default=0)
+
+        await self._async_persist()
+
+    async def async_delete_session(self, base: str, session_index: int) -> None:
+        """Delete a whole session (§6 delete_session).
+
+        Subtracts the session's total from ``lifetime_total``, clamped at 0.
+        ``session_index == -1`` clears the in-progress session. Muscle counters
+        are not adjusted (same rationale as delete_set).
+        """
+        exercise = self._exercise(base)
+        if session_index == -1:
+            sets = exercise["current"]["sets"]
+            total = sum(s["volume"] for s in sets)
+            exercise["current"]["sets"] = []
+        elif 0 <= session_index < len(exercise["history"]):
+            removed = exercise["history"].pop(session_index)
+            total = removed.get("total", 0)
+        else:
+            return
+
+        exercise["lifetime_total"] = max(0, exercise["lifetime_total"] - total)
+
+        await self._async_persist()
