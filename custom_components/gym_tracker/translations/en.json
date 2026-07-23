@@ -72,6 +72,42 @@
           "description": "-1 = current (Today) session; 0 = most recent finished (T-1); 1 = T-2; …"
         }
       }
+    },
+    "add_exercise": {
+      "name": "Add exercise",
+      "description": "Add a user-defined exercise and create its entities (via a config-entry reload). Built-in exercises cannot be redefined. Re-adding a previously removed base restores its stored history.",
+      "fields": {
+        "base": {
+          "name": "Base slug",
+          "description": "Lowercase entity-id stem, e.g. cable_fly. Letters, digits, underscores."
+        },
+        "name": {
+          "name": "Display name",
+          "description": "Friendly name, e.g. \"Cable Fly\"."
+        },
+        "focus": {
+          "name": "Day focus",
+          "description": "Which day-focus group the exercise lives under."
+        },
+        "muscles": {
+          "name": "Muscle groups",
+          "description": "One or more muscle groups this exercise credits per set."
+        },
+        "chart_min": {
+          "name": "Chart minimum",
+          "description": "y-axis floor for the exercise's ApexCharts card."
+        }
+      }
+    },
+    "remove_exercise": {
+      "name": "Remove exercise",
+      "description": "Remove a user-added exercise and its entities (via a config-entry reload). Built-in exercises cannot be removed. Stored history is kept so re-adding the same base restores it.",
+      "fields": {
+        "base": {
+          "name": "Base slug",
+          "description": "The user-added exercise's base slug."
+        }
+      }
     }
   }
 }

@@ -20,10 +20,19 @@ SERVICE_UNDO_LAST_SET = "undo_last_set"
 SERVICE_FINISH_EXERCISE = "finish_exercise"
 SERVICE_DELETE_SET = "delete_set"
 SERVICE_DELETE_SESSION = "delete_session"
+SERVICE_ADD_EXERCISE = "add_exercise"
+SERVICE_REMOVE_EXERCISE = "remove_exercise"
 
 ATTR_BASE = "base"
 ATTR_SESSION_INDEX = "session_index"
 ATTR_SET_INDEX = "set_index"
+ATTR_NAME = "name"
+ATTR_FOCUS = "focus"
+ATTR_MUSCLES = "muscles"
+ATTR_CHART_MIN = "chart_min"
+
+# Default y-axis floor for a newly added exercise's ApexCharts card.
+CHART_MIN_DEFAULT = 20
 
 # --- Number entity input ranges (§5) -----------------------------------------
 NUMBER_WEIGHT = "weight"
@@ -166,12 +175,9 @@ DAY_FOCUS_GROUPS: tuple[str, ...] = (
 )
 
 # -----------------------------------------------------------------------------
-# The one knob that controls which exercises get entities registered.
-#
-# Step 3 of the build ships bench_press only, so the data model can be
-# validated against the live dashboard before generating 29x entities. To
-# widen coverage, add bases here (or set to tuple(EXERCISES) for all of them).
-# Platforms and services both read this list — there is no hardcoded filter
-# anywhere else.
+# EXERCISES above are the built-in defaults (all enabled). User-added exercises
+# are stored at runtime by the coordinator (Store key "custom_exercises") and
+# merged on top — see GymTrackerCoordinator.exercises. There is no static
+# enabled-list any more: every built-in plus every user-added exercise gets
+# entities. Platforms and services read the coordinator's merged taxonomy.
 # -----------------------------------------------------------------------------
-ENABLED_EXERCISES: tuple[str, ...] = ("bench_press",)

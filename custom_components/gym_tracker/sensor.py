@@ -16,7 +16,7 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from . import GymTrackerConfigEntry
-from .const import ENABLED_EXERCISES, EXERCISES, UNIT_KG, ExerciseDef
+from .const import UNIT_KG, ExerciseDef
 from .coordinator import GymTrackerCoordinator
 from .entity import exercise_device_info
 
@@ -87,8 +87,8 @@ async def async_setup_entry(
     """Create the sensor set for each enabled exercise."""
     coordinator = entry.runtime_data
     entities = [
-        GymSensor(coordinator, EXERCISES[base], description)
-        for base in ENABLED_EXERCISES
+        GymSensor(coordinator, exercise, description)
+        for exercise in coordinator.exercises.values()
         for description in SENSOR_TYPES
     ]
     async_add_entities(entities)

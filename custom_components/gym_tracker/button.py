@@ -8,8 +8,6 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from . import GymTrackerConfigEntry
 from .const import (
-    ENABLED_EXERCISES,
-    EXERCISES,
     SERVICE_ADD_SET,
     SERVICE_FINISH_EXERCISE,
     SERVICE_UNDO_LAST_SET,
@@ -34,8 +32,8 @@ async def async_setup_entry(
     """Create the action buttons for each enabled exercise."""
     coordinator = entry.runtime_data
     entities = [
-        GymButton(coordinator, EXERCISES[base], kind, name, method)
-        for base in ENABLED_EXERCISES
+        GymButton(coordinator, exercise, kind, name, method)
+        for exercise in coordinator.exercises.values()
         for kind, (name, method) in _BUTTONS.items()
     ]
     async_add_entities(entities)

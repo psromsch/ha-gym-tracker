@@ -101,3 +101,79 @@ delete_session:
           max: 100
           step: 1
           mode: box
+
+add_exercise:
+  name: Add exercise
+  description: >-
+    Add a user-defined exercise and create its entities (via a config-entry
+    reload). Built-in exercises cannot be redefined. Re-adding a previously
+    removed base restores its stored history.
+  fields:
+    base:
+      name: Base slug
+      description: Lowercase entity-id stem, e.g. cable_fly. Letters, digits, underscores.
+      required: true
+      example: cable_fly
+      selector:
+        text:
+    name:
+      name: Display name
+      description: Friendly name, e.g. "Cable Fly".
+      required: true
+      example: Cable Fly
+      selector:
+        text:
+    focus:
+      name: Day focus
+      description: Which day-focus group the exercise lives under.
+      required: false
+      default: Chest
+      selector:
+        select:
+          options: [Lower, Biceps, Lats, Chest, Triceps, Shoulders]
+    muscles:
+      name: Muscle groups
+      description: One or more muscle groups this exercise credits per set.
+      required: true
+      example: "[chest]"
+      selector:
+        select:
+          multiple: true
+          options:
+            - chest
+            - shoulders
+            - lats
+            - biceps
+            - triceps
+            - quads
+            - hamstrings
+            - glutes
+            - calves
+            - adductor
+            - abs
+    chart_min:
+      name: Chart minimum
+      description: y-axis floor for the exercise's ApexCharts card.
+      required: false
+      default: 20
+      selector:
+        number:
+          min: 0
+          max: 500
+          step: 1
+          mode: box
+
+remove_exercise:
+  name: Remove exercise
+  description: >-
+    Remove a user-added exercise and its entities (via a config-entry reload).
+    Built-in exercises cannot be removed. Stored history is kept so re-adding
+    the same base restores it.
+  fields:
+    base:
+      name: Base slug
+      description: The user-added exercise's base slug.
+      required: true
+      example: cable_fly
+      selector:
+        text:

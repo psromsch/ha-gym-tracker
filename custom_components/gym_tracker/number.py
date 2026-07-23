@@ -8,8 +8,6 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from . import GymTrackerConfigEntry
 from .const import (
-    ENABLED_EXERCISES,
-    EXERCISES,
     NUMBER_REPS,
     NUMBER_WEIGHT,
     REPS_MAX,
@@ -28,10 +26,10 @@ async def async_setup_entry(
     entry: GymTrackerConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
-    """Create the weight and reps number entities for enabled exercises."""
+    """Create the weight and reps number entities for every exercise."""
+    coordinator = entry.runtime_data
     entities: list[GymNumber] = []
-    for base in ENABLED_EXERCISES:
-        exercise = EXERCISES[base]
+    for exercise in coordinator.exercises.values():
         entities.append(
             GymNumber(
                 exercise,
