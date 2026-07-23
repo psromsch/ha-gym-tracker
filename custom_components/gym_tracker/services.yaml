@@ -1,0 +1,41 @@
+add_set:
+  name: Add set
+  description: >-
+    Record a set for an exercise using its current weight and reps inputs.
+    Both must be greater than zero or the call is a no-op.
+  fields:
+    base:
+      name: Exercise
+      description: The exercise base slug (e.g. bench_press).
+      required: true
+      example: bench_press
+      selector:
+        text:
+
+undo_last_set:
+  name: Undo last set
+  description: >-
+    Remove the most recent set. Falls back to the last set of the most
+    recent finished session if the current session is empty.
+  fields:
+    base:
+      name: Exercise
+      description: The exercise base slug (e.g. bench_press).
+      required: true
+      example: bench_press
+      selector:
+        text:
+
+finish_exercise:
+  name: Finish exercise
+  description: >-
+    Close out the current session, prepending it to history. No-op if the
+    current session has no sets.
+  fields:
+    base:
+      name: Exercise
+      description: The exercise base slug (e.g. bench_press).
+      required: true
+      example: bench_press
+      selector:
+        text:
