@@ -29,6 +29,26 @@ def _session_max_weight(record: dict[str, Any]) -> float:
     return max((s["weight"] for s in record["current"]["sets"]), default=0)
 
 
+def _last_weight(record: dict[str, Any]) -> float | None:
+    """Weight of the most recently logged set (spec §5, durable long-term).
+
+    Prefers the current session's last set, then walks the newest-first
+    ``history`` for the most recent finished session that has sets. The value
+    is *held* between sessions (it does not reset to 0), so as a
+    ``measurement`` sensor it produces a clean stepped progression line that
+    Home Assistant's recorder keeps as long-term statistics — a durable weight
+    record that survives independently of this integration's own storage.
+
+    Returns ``None`` (state "unknown") when the exercise has no logged set yet.
+    """
+    if record["current"]["sets"]:
+        return record["current"]["sets"][-1]["weight"]
+    for session in record["history"]:
+        if session["sets"]:
+            return session["sets"][-1]["weight"]
+    return None
+
+
 def _lifetime_total(record: dict[str, Any]) -> float:
     return record["lifetime_total"]
 
@@ -59,6 +79,13 @@ SENSOR_TYPES: tuple[GymSensorDescription, ...] = (
         native_unit_of_measurement=UNIT_KG,
         state_class=SensorStateClass.MEASUREMENT,
         value_fn=_session_max_weight,
+    ),
+    GymSensorDescription(
+        key="last_weight",
+        name="Last Weight",
+        native_unit_of_measurement=UNIT_KG,
+        state_class=SensorStateClass.MEASUREMENT,
+        value_fn=_last_weight,
     ),
     GymSensorDescription(
         key="lifetime_total",
