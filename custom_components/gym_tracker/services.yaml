@@ -130,7 +130,7 @@ add_exercise:
       default: Chest
       selector:
         select:
-          options: [Lower, Biceps, Lats, Chest, Triceps, Shoulders]
+          options: [Lower, Biceps, Lats, Chest, Triceps, Shoulders, Abs]
     muscles:
       name: Muscle groups
       description: One or more muscle groups this exercise credits per set.

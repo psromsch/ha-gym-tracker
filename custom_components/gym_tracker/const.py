@@ -153,8 +153,9 @@ EXERCISES: dict[str, ExerciseDef] = {
 
 # Muscle groups that own a weekly counter (§3). Verified against the live
 # `wt_sets_*` / `wt_target_*` helpers on 2026-07-23 — 11 groups. `adductor`
-# is present (see EXERCISES note); `abs` has no exercise mapped and is
-# incremented manually only.
+# is present (see EXERCISES note). `abs` has no *built-in* exercise mapped to
+# it — it is credited by user-added exercises (e.g. an abdominal machine) and
+# can still be incremented by hand.
 MUSCLE_GROUPS: tuple[str, ...] = (
     "chest",
     "shoulders",
@@ -169,7 +170,10 @@ MUSCLE_GROUPS: tuple[str, ...] = (
     "abs",
 )
 
-# Day-focus groups (§3).
+# Day-focus groups (§3). `Abs` is not in the spec's original six: it was added
+# once a user-added abdominal exercise needed a home, since no built-in
+# exercise targets the `abs` muscle group. This tuple is what the add_exercise
+# service validates `focus` against, so a value missing here is rejected.
 DAY_FOCUS_GROUPS: tuple[str, ...] = (
     "Lower",
     "Biceps",
@@ -177,6 +181,7 @@ DAY_FOCUS_GROUPS: tuple[str, ...] = (
     "Chest",
     "Triceps",
     "Shoulders",
+    "Abs",
 )
 
 # -----------------------------------------------------------------------------
